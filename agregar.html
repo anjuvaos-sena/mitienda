@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar Producto | ADSO2932015</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+    }
+    .container {
+      max-width: 600px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container py-5">
+    <div class="card p-4">
+      <h2 class="text-center text-primary mb-4">Agregar Nuevo Producto</h2>
+
+      <form id="formProducto">
+        <div class="mb-3">
+          <label for="codigo" class="form-label">Código</label>
+          <input type="text" id="codigo" class="form-control" placeholder="Ej: P001" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input type="text" id="nombre" class="form-control" placeholder="Ej: Laptop HP" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="precio" class="form-label">Precio</label>
+          <input type="number" id="precio" class="form-control" step="0.01" placeholder="Ej: 2500000" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="cantidad" class="form-label">Cantidad</label>
+          <input type="number" id="cantidad" class="form-control" placeholder="Ej: 10" required>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Guardar Producto
+          </button>
+        </div>
+      </form>
+
+      <div id="mensaje" class="alert mt-4 d-none" role="alert"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_URL = "https://zvwgugytkzbabagbbpkw.supabase.co/rest/v1/productos";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2d2d1Z3l0a3piYWJhZ2JicGt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3Nzg4MTUsImV4cCI6MjA3ODM1NDgxNX0._mRAUoR-Y7momtUrQbBHLOUke6nAf31Sdj1Bl-V-SDE";
+    const AUTH = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2d2d1Z3l0a3piYWJhZ2JicGt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3Nzg4MTUsImV4cCI6MjA3ODM1NDgxNX0._mRAUoR-Y7momtUrQbBHLOUke6nAf31Sdj1Bl-V-SDE";
+
+    const form = document.getElementById("formProducto");
+    const mensaje = document.getElementById("mensaje");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Obtener valores del formulario
+      const producto = {
+        codigo: document.getElementById("codigo").value.trim(),
+        nombre: document.getElementById("nombre").value.trim(),
+        precio: parseFloat(document.getElementById("precio").value),
+        cantidad: parseInt(document.getElementById("cantidad").value)
+      };
+
+      // Validación básica
+      if (!producto.codigo || !producto.nombre || isNaN(producto.precio) || isNaN(producto.cantidad)) {
+        mostrarMensaje("⚠️ Por favor completa todos los campos correctamente.", "warning");
+        return;
+      }
+
+      try {
+        const respuesta = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "apikey": API_KEY,
+            "Authorization": AUTH,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation" // Devuelve el registro insertado
+          },
+          body: JSON.stringify(producto)
+        });
+
+        if (!respuesta.ok) {
+          throw new Error("Error al guardar el producto. Código: " + respuesta.status);
+        }
+
+        const data = await respuesta.json();
+        mostrarMensaje("✅ Producto agregado correctamente.", "success");
+        form.reset();
+        console.log("Producto insertado:", data);
+
+      } catch (error) {
+        console.error(error);
+        mostrarMensaje("❌ Error: " + error.message, "danger");
+      }
+    });
+
+    // Función para mostrar mensajes al usuario
+    function mostrarMensaje(texto, tipo) {
+      mensaje.textContent = texto;
+      mensaje.className = "alert alert-" + tipo + " mt-4";
+      mensaje.classList.remove("d-none");
+    }
+  </script>
+</body>
+</html>
